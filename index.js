@@ -1,42 +1,29 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const axios = require("axios");
+
+// importa a lib oficial (@google/generative-ai)
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 const port = process.env.PORT || 10000;
 
-// Para o JSON do Typebot
+// JSON do Typebot
 app.use(bodyParser.json());
+
+// cria o cliente da Gemini API usando a variável GEMINI_API_KEY
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post("/formatar-mensagem", async (req, res) => {
   const promptText = req.body.text || "Texto não fornecido.";
 
   try {
-    // No Render, configure a variável GEMINI_API_KEY com a sua chave
-    const apiKey = process.env.GEMINI_API_KEY;
+    // usa o modelo igual ao exemplo da doc
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const url =
-      "https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=" +
-      apiKey;
+    const result = await model.generateContent(promptText);
+    const response = await result.response;
+    const text = response.text() || "Sem resposta.";
 
-    const response = await axios.post(url, {
-      prompt: { text: promptText },
-      temperature: 0.7,
-      candidateCount: 1,
-    });
-
-    const output =
-      response.data?.candidates?.[0]?.output || "Sem resposta.";
-    res.json({ resposta: output });
+    res.json({ resposta: text });
   } catch (error) {
     console.error(
-      "Erro na requisição:",
-      error.response?.data || error.message
-    );
-    res.status(500).json({ erro: "Erro ao gerar resposta" });
-  }
-});
-
-app.listen(port, () => {
-  console.log(`Servidor rodando na porta ${port}`);
-});
