@@ -40,3 +40,8 @@ app.post("/formatar-mensagem", async (req, res) => {
     res.status(500).json({ erro: "Erro ao gerar resposta" });
   }
 });
+app.listen(port, () => {
+  console.log(`Servidor rodando na porta ${port}`);
+});
+
+
