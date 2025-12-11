@@ -10,9 +10,9 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-"dependencies": {
-  "@google/generative-ai": "^0.21.0",
-  "@google-cloud/vertexai": "^1.10.0",
-  "body-parser": "^2.2.1",
-  "express": "^5.2.1"
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "body-parser": "^2.2.1",
+    "express": "^5.2.1"
+  }
 }
