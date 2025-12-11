@@ -10,12 +10,13 @@ app.use(bodyParser.json());
 app.post("/formatar-mensagem", async (req, res) => {
   const promptText = req.body.text || "Texto não fornecido.";
 
-  const client = new GoogleAuth({
-    keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS || "./chave-servico.json",
-    scopes: "https://www.googleapis.com/auth/cloud-platform",
-  });
-
   try {
+    // Usa a variável de ambiente que aponta para o Secret File
+    const client = new GoogleAuth({
+      keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+      scopes: "https://www.googleapis.com/auth/cloud-platform",
+    });
+
     const authClient = await client.getClient();
 
     const url = "https://generativelanguage.googleapis.com/v1beta/models/text-bison-001:generateText";
@@ -34,7 +35,6 @@ app.post("/formatar-mensagem", async (req, res) => {
 
     const output = response.data?.candidates?.[0]?.output || "Sem resposta.";
     res.json({ resposta: output });
-
   } catch (error) {
     console.error("Erro na requisição:", error.message);
     res.status(500).json({ erro: "Erro ao gerar resposta" });
@@ -42,5 +42,5 @@ app.post("/formatar-mensagem", async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
+  console.log(`Servidor rodando na porta ${port}`);
 });
