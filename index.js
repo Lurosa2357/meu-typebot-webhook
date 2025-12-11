@@ -16,8 +16,8 @@ app.post("/formatar-mensagem", async (req, res) => {
     // No Render, crie a variável GEMINI_API_KEY com o valor da sua chave.
     const apiKey = process.env.GEMINI_API_KEY;
 
-   const url =
-  "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=" +
+const url =
+  "https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent?key=" +
   apiKey;
 
     const response = await axios.post(url, {
@@ -43,6 +43,7 @@ app.post("/formatar-mensagem", async (req, res) => {
 app.listen(port, () => {
   console.log(`Servidor rodando na porta ${port}`);
 });
+
 
 
 
