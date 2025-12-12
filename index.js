@@ -52,13 +52,13 @@ app.post("/formatar-mensagem", async (req, res) => {
 
     // Normalizar diferentes tipos de quebra de linha (Make/Telegram)
     let userInput = promptText
-      .replace(/\\r\\n/g, ' ')   // Windows escaped
-      .replace(/\\r/g, ' ')      // Old Mac escaped
-      .replace(/\\n/g, ' ')      // Unix escaped
-      .replace(/\r\n/g, ' ')     // Windows literal
-      .replace(/\r/g, ' ')       // Old Mac literal
-      .replace(/\n/g, ' ')       // Unix literal
-      .replace(/\s+/g, ' ')      // Multiple spaces to single
+      .replace(/\\r\\n/g, ' ')
+      .replace(/\\r/g, ' ')
+      .replace(/\\n/g, ' ')
+      .replace(/\r\n/g, ' ')
+      .replace(/\r/g, ' ')
+      .replace(/\n/g, ' ')
+      .replace(/\s+/g, ' ')
       .trim();
 
     // Remover quantidade de assentos entre parênteses (exemplo: "11 (9)" → "11")
@@ -145,15 +145,15 @@ Responda APENAS com a mensagem reformatada no formato exato, sem explicações, 
 
     // Limpeza agressiva de markdown e emojis residuais
     let respostaLimpa = text
-      .replace(/```[\s\S]*?```/g, '')                    // Remove blocos de código
-      .replace(/\*\*/g, '')                              // Remove negritos **
-      .replace(/\*(?!\s)/g, '')                          // Remove asteriscos simples
-      .replace(/`/g, '')                                 // Remove backticks
-      .replace(/[🀀-🿿]/gu, '')                           // Remove emojis Unicode range
-      .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')            // Remove emojis alternativo
-      .replace(/[\u{1F600}-\u{1F64F}]/gu, '')            // Faces
-      .replace(/[\u{2600}-\u{26FF}]/gu, '')              // Símbolos diversos
-      .replace(/[\u{2700}-\u{27BF}]/gu, '')              // Dingbats
+      .replace(/``````/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/\*(?!\s)/g, '')
+      .replace(/`/g, '')
+      .replace(/[🀀-🿿]/gu, '')
+      .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
+      .replace(/[\u{1F600}-\u{1F64F}]/gu, '')
+      .replace(/[\u{2600}-\u{26FF}]/gu, '')
+      .replace(/[\u{2700}-\u{27BF}]/gu, '')
       .trim();
 
     // Verificar se há conteúdo após limpeza
