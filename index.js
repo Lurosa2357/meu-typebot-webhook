@@ -5,14 +5,23 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const app = express();
 const port = process.env.PORT || 10000;
 
-// JSON do Typebot
+// JSON do Typebot / Make
 app.use(bodyParser.json());
 
 // cliente Gemini usando GEMINI_API_KEY (configurada no Render)
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 app.post("/formatar-mensagem", async (req, res) => {
-  const promptText = req.body.text || "Texto não fornecido.";
+  // Lê o mesmo campo que o Make envia: "user_input"
+  const promptText = req.body.user_input;
+
+  // Se não vier nada, devolve a mensagem de erro padronizada
+  if (!promptText || typeof promptText !== "string" || !promptText.trim()) {
+    return res.json({
+      resposta:
+        'O texto da mensagem original não foi fornecido.',
+    });
+  }
 
   try {
     const model = genAI.getGenerativeModel({
