@@ -5,13 +5,17 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const app = express();
 const port = process.env.PORT || 10000;
 
+// Middleware para ler JSON do corpo da requisição
 app.use(bodyParser.json());
 
+// Instância do Gemini usando a chave de API do ambiente
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+// Rota principal para formatar a mensagem
 app.post("/formatar-mensagem", async (req, res) => {
   const promptText = req.body.user_input;
 
+  // Validação básica do corpo
   if (!promptText || typeof promptText !== "string" || !promptText.trim()) {
     return res.status(400).json({
       erro: "O campo 'user_input' é obrigatório e deve ser uma string não vazia.",
@@ -97,6 +101,7 @@ Agora, gere SOMENTE a resposta padronizada com base na mensagem recebida, seguin
   }
 });
 
+// Rota simples para teste de saúde
 app.get("/", (req, res) => {
   res.send("API de formatação de mensagens com Gemini está rodando.");
 });
