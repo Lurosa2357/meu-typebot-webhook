@@ -6,10 +6,10 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const app = express();
 const port = process.env.PORT || 10000;
 
-// Limite de JSON pra evitar payload gigante
+// Limite pra evitar payload gigante do Telegram quebrar sua API
 app.use(express.json({ limit: "200kb" }));
 
-// (Opcional) Proteção simples: no Make envie header X-WEBHOOK-TOKEN
+// (Opcional) Proteção simples via header no Make: X-WEBHOOK-TOKEN
 const WEBHOOK_TOKEN = process.env.WEBHOOK_TOKEN || null;
 
 // Gemini
@@ -23,8 +23,6 @@ const InputSchema = z.object({
   user_input: z.string().min(1).max(200000),
 });
 
-// OBS: aqui a gente força o modelo a devolver texto pronto para "A partir de: ...",
-// mantendo "10k" (não converter para 10000).
 const ExtractedSchema = z
   .object({
     oportunidade_destino: z.string().nullable(), // "Buenos Aires (Argentina)"
@@ -39,20 +37,24 @@ const ExtractedSchema = z
     }),
     programa: z.string().nullable(), // "Smiles", "AAdvantage", etc.
     cia: z.string().nullable(),      // "GOL", "Air France", etc.
-    classe: z.string().nullable(),   // "Econômica", "Executiva"...
+    classe: z.string().nullable(),   // "Econômica", "Executiva"
     a_partir_de_texto: z.string().nullable(), // "10k milhas AAdvantage + taxas"
-    datas_ida: z.array(
-      z.object({
-        mes_ano: z.string(),         // "Dez/2025"
-        dias: z.array(z.number()),   // [12, 13, 15]
-      })
-    ).default([]),
-    datas_volta: z.array(
-      z.object({
-        mes_ano: z.string(),
-        dias: z.array(z.number()),
-      })
-    ).default([]),
+    datas_ida: z
+      .array(
+        z.object({
+          mes_ano: z.string(),       // "Dez/2025"
+          dias: z.array(z.number()), // [11, 12, 13]
+        })
+      )
+      .default([]),
+    datas_volta: z
+      .array(
+        z.object({
+          mes_ano: z.string(),
+          dias: z.array(z.number()),
+        })
+      )
+      .default([]),
   })
   .strict();
 
@@ -88,10 +90,8 @@ const MES_ABREV = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set"
 function normalizeMesAno(mesAno) {
   const s = String(mesAno || "").trim();
 
-  // já no formato "Dez/2025"
   if (/^(Jan|Fev|Mar|Abr|Mai|Jun|Jul|Ago|Set|Out|Nov|Dez)\/\d{4}$/.test(s)) return s;
 
-  // "Dezembro/2025"
   const mLong = s.match(/^([A-Za-zÀ-ÿ]+)\/(\d{4})$/);
   if (mLong) {
     const monthName = mLong[1].toLowerCase();
@@ -104,7 +104,6 @@ function normalizeMesAno(mesAno) {
     if (mapLong[monthName]) return `${mapLong[monthName]}/${year}`;
   }
 
-  // "12/2025"
   const mNum = s.match(/^(\d{1,2})\/(\d{4})$/);
   if (mNum) {
     const mm = Number(mNum[1]);
@@ -112,7 +111,6 @@ function normalizeMesAno(mesAno) {
     if (mm >= 1 && mm <= 12) return `${MES_ABREV[mm - 1]}/${yy}`;
   }
 
-  // "2025-12"
   const mIso = s.match(/^(\d{4})-(\d{2})$/);
   if (mIso) {
     const yy = mIso[1];
@@ -194,7 +192,7 @@ function renderFinal(d) {
   const idaTxt = formatDatas(d.datas_ida);
   const voltaTxt = formatDatas(d.datas_volta);
 
-  // IMPORTANTÍSSIMO: aqui a estrutura e quebras são intencionais
+  // Mantém layout e quebras de linha consistentes
   return [
     `Oportunidade de emissão – ${destinoTitulo}`,
     ``,
@@ -221,7 +219,6 @@ function renderFinal(d) {
     .trim();
 }
 
-// Prompt: Gemini EXTRAI JSON, não formata texto final
 function buildExtractionPrompt(userInput) {
   return `
 Você é um extrator de dados de alertas de passagens com milhas.
@@ -284,7 +281,7 @@ app.post("/formatar-mensagem", async (req, res) => {
 
   let userInput = normText(parsed.data.user_input);
 
-  // Proteção contra mensagens grandes
+  // Truncamento para evitar estourar limites do modelo
   const HARD_LIMIT = 90000;
   if (userInput.length > HARD_LIMIT) {
     userInput = userInput.slice(0, HARD_LIMIT) + "\n[TRUNCADO_POR_LIMITE]";
@@ -294,23 +291,17 @@ app.post("/formatar-mensagem", async (req, res) => {
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
       generationConfig: {
-        maxOutputTokens: 1000,
-        temperature: 0.2,
+        maxOutputTokens: 1200,
+        temperature: 0.0,
       },
     });
 
     const prompt = buildExtractionPrompt(userInput);
 
-    // Timeout (15s)
-    const controller = new AbortController();
-    const t = setTimeout(() => controller.abort(), 15000);
-
+    // ✅ IMPORTANTE: NÃO usar "signal" aqui (o SDK não aceita)
     const result = await model.generateContent({
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      signal: controller.signal,
     });
-
-    clearTimeout(t);
 
     const raw = result?.response?.text?.() || "";
     const json = safeExtractJson(raw);
@@ -335,15 +326,14 @@ app.post("/formatar-mensagem", async (req, res) => {
     const resposta = renderFinal(out.data);
     return res.json({ resposta, requestId });
   } catch (error) {
-    const isAbort = error?.name === "AbortError";
     console.error("Erro /formatar-mensagem:", {
       requestId,
       name: error?.name,
       message: error?.message,
     });
 
-    return res.status(isAbort ? 504 : 500).json({
-      erro: isAbort ? "Timeout no Gemini" : "Erro ao gerar resposta",
+    return res.status(500).json({
+      erro: "Erro ao gerar resposta",
       requestId,
     });
   }
