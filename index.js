@@ -9,7 +9,7 @@ const port = process.env.PORT || 10000;
 app.use(bodyParser.json());
 
 // Instância do Gemini
-const genAI = new GoogleGenerativeAI(process.env.AIzaSyD3Fk_fOMw-54ukah8gZaEePXjiLyp2xHw);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Rota principal
 app.post("/formatar-mensagem", async (req, res) => {
@@ -128,3 +128,4 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Servidor rodando na porta ${port}`);
 });
+
