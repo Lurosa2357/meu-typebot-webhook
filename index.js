@@ -9,7 +9,7 @@ const port = process.env.PORT || 10000;
 app.use(bodyParser.json());
 
 // Instância do Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.AIzaSyD3Fk_fOMw-54ukah8gZaEePXjiLyp2xHw);
 
 // Rota principal
 app.post("/formatar-mensagem", async (req, res) => {
@@ -27,7 +27,7 @@ app.post("/formatar-mensagem", async (req, res) => {
       model: "gemini-2.5-flash",
       generationConfig: {
         temperature: 0.1,
-        maxOutputTokens: 900
+        maxOutputTokens: 2000
       }
     });
 
@@ -45,7 +45,6 @@ REGRAS OBRIGATÓRIAS:
 - NÃO invente dados
 - NÃO mantenha textos promocionais, CTAs, hacks, clubes ou observações extras
 - Ignore números entre parênteses (ex: 12 (7))
-- Se um campo não existir, use null
 - Agrupe datas por mês e ano
 - Use meses abreviados em português: Jan, Fev, Mar, Abr, Mai, Jun, Jul, Ago, Set, Out, Nov, Dez
 
