@@ -1,1 +1,30 @@
-
+{
+  "name": "reformatador-milhas-telegram",
+  "version": "1.0.0",
+  "description": "API para reformatar mensagens de passagens com milhas via Telegram e Make",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "keywords": [
+    "telegram",
+    "make",
+    "gemini",
+    "api",
+    "milhas",
+    "passagens"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "@google/generative-ai": "^0.21.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
