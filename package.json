@@ -1,15 +1,21 @@
 {
   "name": "meu-typebot-webhook",
   "version": "1.0.0",
-  "description": "",
+  "description": "Webhook para formatar alertas de passagens com milhas",
   "main": "index.js",
-  "type": "commonjs",
   "scripts": {
     "start": "node index.js"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
-    "express": "^4.21.2",
+    "express": "^4.19.2",
     "zod": "^3.23.8"
   }
 }
